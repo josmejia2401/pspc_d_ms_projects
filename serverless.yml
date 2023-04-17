@@ -1,0 +1,369 @@
+# serverless.yml
+#https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml
+
+# custom
+custom:
+  appName: pspc
+  domainName: manage
+  serviceName: projects
+  bucketName: '${self:provider.stage}-${self:custom.appName}-${self:custom.domainName}-${self:custom.serviceName}-bucket'
+  stackName: '${self:provider.stage}-${self:custom.appName}-${self:custom.domainName}-${self:custom.serviceName}-stack'
+  projectsTableName: '${self:provider.stage}_${self:custom.appName}_projects'
+  loggerMode: ALL
+  dynamodb:
+    start:
+      migrated: true
+  # serverless offline plugin setup
+  serverless-offline:
+    httpPort: 4000
+
+# Service name
+service: '${self:custom.appName}-${self:custom.domainName}-${self:custom.serviceName}'
+# Framework version constraint (semver constraint): '3', '^2.33'
+frameworkVersion: '3'
+# plugins
+plugins:
+  - serverless-offline
+  #- serverless-plugin-include-dependencies
+  - serverless-deployment-bucket
+  - serverless-iam-roles-per-function
+
+# providers
+provider:
+  name: aws
+  # Default stage (default: dev)
+  stage: ${opt:stage, 'dev'}
+  # Default region (default: us-east-1)
+  region: ${opt:region, 'us-east-1'}
+  # The AWS profile to use to deploy (default: "default" profile)
+  profile: default
+  # runtime
+  runtime: nodejs14.x
+  # Use a custom name for the CloudFormation stack
+  stackName: ${self:custom.stackName}
+  # Default memory size for functions (default: 1024MB)
+  memorySize: 128
+  # Processor architecture: 'x86_64' or 'arm64' via Graviton2 (default: x86_64)
+  architecture: arm64
+  # Default timeout for functions (default: 6 seconds)
+  # Note: API Gateway has a maximum timeout of 30 seconds
+  timeout: 15
+  # Duration for CloudWatch log retention (default: forever)
+  logRetentionInDays: 1
+  lambdaHashingVersion: 20201221
+  # Use function versioning (enabled by default)
+  versionFunctions: false
+  tracing:
+    # Can only be true if API Gateway is inside a stack.
+    apiGateway: true
+    # Optional, can be true (true equals 'Active'), 'Active' or 'PassThrough'
+    lambda: true
+  # Configure the S3 bucket used by Serverless Framework to deploy code packages to Lambda
+  # serverless-deployment-bucket
+  deploymentBucket:
+    # Name of an existing bucket to use (default: created by serverless)
+    name: ${self:custom.bucketName}
+    # On deployment, serverless prunes artifacts older than this limit (default: 5)
+    maxPreviousDeploymentArtifacts: 1
+    # Enable bucket versioning (default: false)
+    versioning: false
+    blockPublicAccess: true
+    serverSideEncryption: AES256
+    # Specific tags
+    tags:
+      barbapp:application: barbapp
+      barbapp:component: projects
+      barbapp:creator: jose.mejia
+      barbapp:domain-name: manage
+      barbapp:layer: application #application, network, integration, storage
+
+  #https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/#api-gateway-v1-rest-api-1
+  # Use a custom name for the API Gateway API
+  #apiName: '${self:provider.stage}-${self:service}'
+  # Endpoint type for API Gateway REST API: edge or regional (default: edge)
+  endpointType: REGIONAL
+  # Optional API Gateway REST API global config
+  #apiGateway:
+    # Description for the API Gateway stage deployment
+  #  description: API para administrar los usuarios
+    # Optional detailed Cloud Watch Metrics
+  #  metrics: false
+  # Global environments
+  environment:
+    DYNDB_PROJECTS_TBL: ${self:custom.projectsTableName}
+    STAGE: ${self:provider.stage}
+    REGION: ${self:provider.region}
+    APP_NAME: ${self:custom.appName}
+    SERVICE_NAME: ${self:custom.serviceName}
+    DOMAIN_NAME: ${self:custom.domainName}
+    LOGGER_MODE: ${self:custom.loggerMode}
+    JTW_SECRET_VALUE: '${self:custom.appName}/18564B1D2DD86179A51363A991CBE'
+    JWT_TOKEN_LIFE: '365d'
+
+  # Global tags
+  tags:
+    barbapp:application: barbapp
+    barbapp:component: projects
+    barbapp:creator: jose.mejia
+    barbapp:domain-name: manage
+    barbapp:layer: application #application, network, integration, storage
+
+  #stackTags:
+    #barbapp:application-id: barbapp
+    #barbapp:component-id: security-users
+    #barbapp:component-name: security-users
+    #barbapp:creator-name: security-users
+    #barbapp:creator-id: security-users
+    #barbapp:domain-name: security
+    #barbapp:layer: application #storage, network, integration
+
+package:
+  # Package this function as an individual artifact (default: false)
+  individually: false
+  patterns:
+    - node_modules/aws-sdk/**
+    - node_modules/aws-lambda/**
+    - package-lock.json
+    - src/**
+    - .gitignore
+    - .git/**
+
+functions:
+  create:
+    name: ${self:provider.stage}-${self:service}-post-create-http
+    description: Create a item for ${self:custom.serviceName}
+    handler: dist/application/aws/user-handler.createUserHandler
+    iamRoleStatementsName: ${self:provider.stage}-${self:service}-post-create-http-role
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:Scan
+          - dynamodb:PutItem
+        Resource:
+          - { "Fn::GetAtt": ["ProjectsDynamoDBTable", "Arn"] }
+          - { "Fn::Join": [ "/", [ { "Fn::GetAtt": ["ProjectsDynamoDBTable", "Arn" ] }, "index", "UsernameIndex" ]]}
+    events:
+      - http:
+          method: POST
+          cors:
+            origin: '*'
+            headers: '*'
+            allowCredentials: false
+          private: false
+          path: /${self:custom.appName}/${self:custom.domainName}/${self:custom.serviceName}
+          authorizer:
+            type: "TOKEN"
+            authorizerId:
+              Ref: PROJApiGatewayAuthorizer
+
+
+  find-by-id:
+    name: ${self:provider.stage}${self:service}-get-find-by-id-http
+    description: Find a item by id for ${self:custom.serviceName}
+    handler: dist/application/aws/user-handler.getUserByTokenHandler
+    iamRoleStatementsName: ${self:provider.stage}-${self:service}-get-find-by-id-http-role
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:Scan
+        Resource:
+          - { "Fn::GetAtt": ["ProjectsDynamoDBTable", "Arn"] }
+    events:
+      - http:
+          method: GET
+          cors:
+            origin: '*'
+            headers: '*'
+            allowCredentials: false
+          private: false
+          path: /${self:custom.appName}/${self:custom.domainName}/${self:custom.serviceName}/{id}
+          authorizer:
+            type: "TOKEN"
+            authorizerId:
+              Ref: PROJApiGatewayAuthorizer
+
+  find-all:
+    name: ${self:provider.stage}${self:service}-get-find-all-http
+    description: Find all items by project id or user id for ${self:custom.serviceName}
+    handler: dist/application/aws/user-handler.getUserByTokenHandler
+    iamRoleStatementsName: ${self:provider.stage}-${self:service}-get-find-all-role
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:Scan
+        Resource:
+          - { "Fn::GetAtt": ["ProjectsDynamoDBTable", "Arn"] }
+    events:
+      - http:
+          method: GET
+          cors:
+            origin: '*'
+            headers: '*'
+            allowCredentials: false
+          private: false
+          path: /${self:custom.appName}/${self:custom.domainName}/${self:custom.serviceName}
+          authorizer:
+            type: "TOKEN"
+            authorizerId:
+              Ref: PROJApiGatewayAuthorizer
+
+
+  update:
+    name: ${self:provider.stage}-${self:service}-put-update-http
+    description: Update a item by id for ${self:custom.serviceName}
+    handler: dist/application/aws/user-handler.updateUserHandler
+    iamRoleStatementsName: ${self:provider.stage}-${self:service}-put-update-http-role
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+        Resource:
+          - { "Fn::GetAtt": ["ProjectsDynamoDBTable", "Arn"] }
+    events:
+      - http:
+          method: put
+          cors:
+            origin: '*'
+            headers: '*'
+            allowCredentials: false
+          private: false
+          path: /${self:custom.appName}/${self:custom.domainName}/${self:custom.serviceName}/{id}
+          authorizer:
+            type: "TOKEN"
+            authorizerId:
+              Ref: PROJApiGatewayAuthorizer
+
+  delete:
+    name: ${self:provider.stage}-${self:service}-delete-http
+    description: Delete a item by id for ${self:custom.serviceName}
+    handler: dist/application/aws/user-handler.deleteUserByTokenHandler
+    iamRoleStatementsName: ${self:provider.stage}-${self:service}-delete-ttp-role
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource:
+          - { "Fn::GetAtt": ["ProjectsDynamoDBTable", "Arn"] }
+      - Effect: Allow
+        Action:
+          - lambda:InvokeFunction
+          - lambda:InvokeAsync
+        Resource:
+          - "*"
+    events:
+      - http:
+          method: DELETE
+          cors:
+            origin: '*'
+            headers: '*'
+            allowCredentials: false
+          private: false
+          path: /${self:custom.appName}/${self:custom.domainName}/${self:custom.serviceName}/{id}
+          authorizer:
+            type: "TOKEN"
+            authorizerId:
+              Ref: PROJApiGatewayAuthorizer
+
+#https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadWriteCapacityMode.html
+resources:
+  Resources:
+    ProjectsDynamoDBTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:custom.projectsTableName}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - 
+            AttributeName: id
+            AttributeType: S
+          - 
+            AttributeName: username
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: UsernameIndex
+            KeySchema:
+              - AttributeName: username
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+
+    ApiGatewayRestApi:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: '${self:provider.stage}-${self:service}'
+        Description: 'API para administrar ${self:custom.serviceName}'
+        #EndpointConfiguration: REGIONAL
+
+    # This response is needed for custom authorizer failures cors support. https://docs.aws.amazon.com/apigateway/latest/developerguide/supported-gateway-response-types.html
+    ExpiredGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: EXPIRED_TOKEN
+        ResponseTemplates:
+          application/json: |
+            {
+              "message":"Token Expired",
+              "requestId":"$context.requestId"
+            }
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
+
+    AuthFailureGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseTemplates:
+            application/json: |
+              {
+                "message":$context.error.messageString,
+                "requestId":"$context.requestId"
+              }
+        ResponseType: UNAUTHORIZED
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
+
+    DenyFailureGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseTemplates:
+            #https://stackoverflow.com/a/49806967/10212963
+            application/json: |
+              {
+                "message":$context.authorizer.customErrorMessage,
+                "requestId":"$context.requestId"
+              }
+        ResponseType: ACCESS_DENIED
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '403'
+
+    PROJApiGatewayAuthorizer:
+      Type: "AWS::ApiGateway::Authorizer"
+      Properties:
+        AuthorizerResultTtlInSeconds: 0
+        Name: "authorizer"
+        AuthorizerUri: !Sub "arn:aws:apigateway:${self:provider.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:${AWS::AccountId}:function:${self:provider.stage}-barbapp-security-auth-post-authorizer/invocations"
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        Type: "TOKEN"
+        IdentitySource: "method.request.header.Authorization"
+      DependsOn:
+        - "ApiGatewayRestApi"

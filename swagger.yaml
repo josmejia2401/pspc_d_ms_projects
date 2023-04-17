@@ -1,0 +1,250 @@
+openapi: 3.0.0
+info:
+    title: Clients API. https://editor.swagger.io/
+    version: 1.0.0
+    description: Api de clientes
+paths:
+    /barbapp/clients/users:
+        get:
+            operationId: $stage-barbapp-clients-users-get-user-by-token-http
+            summary: Obtiene la información de un usuario por token
+            security:
+                - BearerAuth: []
+            #parameters:
+            #    - in: header
+            #      schema:
+            #          type: string
+            #      name: Authorization
+            #      description: an authorization header
+            #      required: true
+            #      example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IiJ9.eyJ1c2VybmFtZSI6IjYzOTZkYmNmLWI5YjQtNDYzMC05Y2U0LTFlN2YwYWE5YjBjNyIsIm5hbWUiOiJKb3NlIE1lamlhIiwiaWF0IjoxNjc5MzM3NTI2LCJleHAiOjE3MTA4NzM1MjYsImF1ZCI6ImJhcmJhcHAiLCJzdWIiOiI2Mzk2ZGJjZi1iOWI0LTQ2MzAtOWNlNC0xZTdmMGFhOWIwYzciLCJqdGkiOiIxZGViYzlmOS0wZjZjLTRmMjctYjM2Zi0xNDc5YzlkZmQzYjYifQ.sYk_sVarTNC5cATYmwGlb0gErlmzXlrteVvlxjPSTF0"
+            responses:
+                "200":
+                    description: 200 response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/UserObject"
+                            examples:
+                                example:
+                                    value:
+                                        "username": "username"
+                                        "email": "josmejia.2401@gmail.com"
+                                        "fullName": "Jose Mejia"
+                                        "telephone": "3105397699"
+                                        "id": "36e43e07-11fb-432b-8e76-372ea0b56944"
+                                        "status": 3
+                                        "createdAt": "2023-03-18T17:05:58.458Z"
+                "403":
+                    description: 403 Forbidden
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorObject"
+                            examples:
+                                example:
+                                    value:
+                                        "code": "Forbidden"
+                                        "message": "User doesn't have permission to the request resource."
+                "500":
+                    description: 500 internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorObject"
+                            examples:
+                                example:
+                                    value: |
+                                        {
+                                         "code": "INTERNAL_ERROR",
+                                         "message": "Internal error"
+                                        }
+        post:
+            operationId: $stage-barbapp-clients-users-post-create-user-http
+            summary: Crea un usuario en el sistema
+            requestBody:
+                content:
+                    "application/json":
+                        schema:
+                            $ref: "#/components/schemas/UserObject"
+                        examples:
+                            example:
+                                value:
+                                    "username": "username"
+                                    "email": "josmejia.2401@gmail.com"
+                                    "fullName": "Jose Mejia"
+                                    "telephone": "3105397699"
+                                    "id": "36e43e07-11fb-432b-8e76-372ea0b56944"
+                                    "password": "password"
+            responses:
+                "200":
+                    description: 200 response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/UserObject"
+                            examples:
+                                example:
+                                    value:
+                                        "username": "username"
+                                        "email": "josmejia.2401@gmail.com"
+                                        "fullName": "Jose Mejia"
+                                        "telephone": "3105397699"
+                                        "id": "36e43e07-11fb-432b-8e76-372ea0b56944"
+                                        "status": 3
+                                        "createdAt": "2023-03-18T17:05:58.458Z"
+                "409":
+                    description: 409 conflict
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorObject"
+                            examples:
+                                example:
+                                    value:
+                                        "code": "CONFLICT"
+                                        "message": "User already exist"
+                "500":
+                    description: 500 internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorObject"
+                            examples:
+                                example:
+                                    value: |
+                                        {
+                                         "code": "INTERNAL_ERROR",
+                                         "message": "Internal error"
+                                        }
+        put:
+            operationId: $stage-barbapp-clients-users-put-update-user-http
+            summary: Actualizar un usuario en el sistema
+            security:
+                - BearerAuth: []
+            requestBody:
+                content:
+                    "application/json":
+                        schema:
+                            $ref: "#/components/schemas/UserObject"
+                        examples:
+                            example:
+                                value:
+                                    "email": "josmejia.2401@gmail.com"
+                                    "fullName": "Jose Mejia"
+                                    "telephone": "3105397699"
+            responses:
+                "200":
+                    description: 200 response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/UserObject"
+                            examples:
+                                example:
+                                    value:
+                                        "username": "username"
+                                        "email": "josmejia.2401@gmail.com"
+                                        "fullName": "Jose Mejia"
+                                        "telephone": "3105397699"
+                                        "id": "36e43e07-11fb-432b-8e76-372ea0b56944"
+                                        "status": 3
+                                        "createdAt": "2023-03-18T17:05:58.458Z"
+                "500":
+                    description: 500 internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorObject"
+                            examples:
+                                example:
+                                    value: |
+                                        {
+                                         "code": "INTERNAL_ERROR",
+                                         "message": "Internal error"
+                                        }
+
+        delete:
+            operationId: $stage-barbapp-clients-users-delete-rm-user-http
+            summary: Elimina un usuario en el sistema
+            security:
+                - BearerAuth: []
+            responses:
+                "200":
+                    description: 200 response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/UserObject"
+                            examples:
+                                example:
+                                    value:
+                                        "username": "username"
+                                        "email": "josmejia.2401@gmail.com"
+                                        "fullName": "Jose Mejia"
+                                        "telephone": "3105397699"
+                                        "id": "36e43e07-11fb-432b-8e76-372ea0b56944"
+                                        "status": 3
+                                        "createdAt": "2023-03-18T17:05:58.458Z"
+                "500":
+                    description: 500 internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorObject"
+                            examples:
+                                example:
+                                    value: |
+                                        {
+                                         "code": "INTERNAL_ERROR",
+                                         "message": "Internal error"
+                                        }
+
+security:
+    - BearerAuth: []
+
+components:
+    securitySchemes:
+        BearerAuth:
+            type: http
+            scheme: bearer
+            description: an authorization header
+            #required: true
+            #example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IiJ9.eyJ1c2VybmFtZSI6IjYzOTZkYmNmLWI5YjQtNDYzMC05Y2U0LTFlN2YwYWE5YjBjNyIsIm5hbWUiOiJKb3NlIE1lamlhIiwiaWF0IjoxNjc5MzM3NTI2LCJleHAiOjE3MTA4NzM1MjYsImF1ZCI6ImJhcmJhcHAiLCJzdWIiOiI2Mzk2ZGJjZi1iOWI0LTQ2MzAtOWNlNC0xZTdmMGFhOWIwYzciLCJqdGkiOiIxZGViYzlmOS0wZjZjLTRmMjctYjM2Zi0xNDc5YzlkZmQzYjYifQ.sYk_sVarTNC5cATYmwGlb0gErlmzXlrteVvlxjPSTF0"
+    schemas:
+        ErrorObject:
+            type: object
+            description: An individual Error record.
+            properties:
+                code:
+                    type: string
+                    example: "INTERNAL_ERROR"
+                message:
+                    type: string
+                    example: "Internal error"
+        UserObject:
+            type: object
+            description: An individual User record.
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+                email:
+                    type: string
+                fullName:
+                    type: string
+                telephone:
+                    type: string
+                id:
+                    type: string
+                    example: "36e43e07-11fb-432b-8e76-372ea0b56944"
+                status:
+                    type: integer
+                    enum:
+                        - 1
+                        - 2
+                        - 3
+                    description: "1: Active | 2: Inactive | 3: Pending"
+                createdAt:
+                    type: string
