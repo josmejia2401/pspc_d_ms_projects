@@ -9,3 +9,10 @@ export interface CustomerResponseAWS {
     headers: any;
 }*/
 
+
+export interface ScanTransactionResponse {
+    lastEvaluatedKey: any;
+    results: any[];
+    segment: number;
+    currentRows: number;
+}
