@@ -12,6 +12,8 @@ export function createItemAdapter(): Fn {
             const output = await new CreateItemUseCase(logger).execute({
                 description: event.body["description"],
                 name: event.body["name"],
+                startedAt: event.body["startedAt"] || "",
+                completedAt: event.body["completedAt"] || "",
             }, options);
             return {
                 "headers": {},
@@ -33,7 +35,9 @@ export function updateItemAdapter(): Fn {
                 description: event.body["description"],
                 name: event.body["name"],
                 status: event.body["status"],
-                id: event.params["id"]
+                id: event.params["id"],
+                startedAt: event.body["startedAt"] || "",
+                completedAt: event.body["completedAt"] || "",
             }, options);
             return {
                 "headers": {},

@@ -13,6 +13,8 @@ export async function createItemHandler(event: any, _context: any) {
         bodySchema: Joi.object({
             description: Joi.string().required(),
             name: Joi.string().required(),
+            startedAt: Joi.date().optional(),
+            completedAt: Joi.date().optional(),
         }).required(),
     });
 }
@@ -23,6 +25,8 @@ export async function updateItemHandler(event: any, _context: any) {
             description: Joi.string().required(),
             name: Joi.string().required(),
             status: Joi.number().optional(),
+            startedAt: Joi.date().optional(),
+            completedAt: Joi.date().optional(),
         }).required(),
     });
 }

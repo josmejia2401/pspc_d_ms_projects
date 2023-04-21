@@ -4,5 +4,7 @@ export interface ItemDTO {
     name: string;
     description: string;
     status?: number;
+    startedAt?: string;
+    completedAt?: string;
     createdAt?: string;
-}
+} 
