@@ -15,6 +15,7 @@ export async function createItemHandler(event: any, _context: any) {
             name: Joi.string().required(),
             startedAt: Joi.date().optional(),
             completedAt: Joi.date().optional(),
+            status: Joi.number().optional(),
         }).required(),
     });
 }

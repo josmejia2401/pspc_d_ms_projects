@@ -14,6 +14,7 @@ export function createItemAdapter(): Fn {
                 name: event.body["name"],
                 startedAt: event.body["startedAt"] || "",
                 completedAt: event.body["completedAt"] || "",
+                status: event.body["status"],
             }, options);
             return {
                 "headers": {},
