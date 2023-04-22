@@ -98,6 +98,7 @@ export class ItemManageImpl implements ItemManage {
                 ExpressionAttributeNames: attributes.expressionAttributeNames,
                 ReturnValues: "UPDATED_NEW"
             };
+            this.logger.debug("update", JSON.stringify(params));
             return await this.connection.send(new UpdateItemCommand(params));
         } catch (error) {
             this.logger.error(error);

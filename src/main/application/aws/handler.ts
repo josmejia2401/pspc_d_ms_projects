@@ -29,6 +29,9 @@ export async function updateItemHandler(event: any, _context: any) {
             startedAt: Joi.date().optional(),
             completedAt: Joi.date().optional(),
         }).required(),
+        pathSchema: Joi.object({
+            id: Joi.string().required(),
+        }).required(),
     });
 }
 

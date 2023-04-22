@@ -32,11 +32,10 @@ export function updateItemAdapter(): Fn {
     return async function (event: HttpRequestEvent, d: any, options: OptionsHttp): Promise<HttpResponseEvent> {
         const { logger } = d;
         try {
-            const output = await new UpdateItemUseCase(logger).execute({
+            const output = await new UpdateItemUseCase(logger).execute(event.params["id"], {
                 description: event.body["description"],
                 name: event.body["name"],
                 status: event.body["status"],
-                id: event.params["id"],
                 startedAt: event.body["startedAt"] || "",
                 completedAt: event.body["completedAt"] || "",
             }, options);

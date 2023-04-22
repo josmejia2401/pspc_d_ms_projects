@@ -13,10 +13,9 @@ export class UpdateItemUseCase {
         this.itemManage = new ItemManageImpl(logger);
     }
 
-    async execute(input: ItemDTO, _options: OptionsHttp) {
+    async execute(id: string, input: ItemDTO, _options: OptionsHttp) {
         try {
-            delete (input as any)["id"];
-            await this.itemManage.update(input.id!, input);
+            await this.itemManage.update(id, input);
             return input;
         } catch (error) {
             this.logger.error(error);
