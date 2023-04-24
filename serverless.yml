@@ -77,11 +77,11 @@ provider:
     serverSideEncryption: AES256
     # Specific tags
     tags:
-      barbapp:application: barbapp
-      barbapp:component: projects
-      barbapp:creator: jose.mejia
-      barbapp:domain-name: manage
-      barbapp:layer: application #application, network, integration, storage
+      pspc:application: pspc
+      pspc:component: projects
+      pspc:creator: jose.mejia
+      pspc:domain-name: manage
+      pspc:layer: application #application, network, integration, storage
 
   #https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/#api-gateway-v1-rest-api-1
   # Use a custom name for the API Gateway API
@@ -112,20 +112,20 @@ provider:
 
   # Global tags
   tags:
-    barbapp:application: barbapp
-    barbapp:component: projects
-    barbapp:creator: jose.mejia
-    barbapp:domain-name: manage
-    barbapp:layer: application #application, network, integration, storage
+    pspc:application: pspc
+    pspc:component: projects
+    pspc:creator: jose.mejia
+    pspc:domain-name: manage
+    pspc:layer: application #application, network, integration, storage
 
   #stackTags:
-    #barbapp:application-id: barbapp
-    #barbapp:component-id: security-users
-    #barbapp:component-name: security-users
-    #barbapp:creator-name: security-users
-    #barbapp:creator-id: security-users
-    #barbapp:domain-name: security
-    #barbapp:layer: application #storage, network, integration
+    #pspc:application-id: pspc
+    #pspc:component-id: security-users
+    #pspc:component-name: security-users
+    #pspc:creator-name: security-users
+    #pspc:creator-id: security-users
+    #pspc:domain-name: security
+    #pspc:layer: application #storage, network, integration
 
 package:
   # Package this function as an individual artifact (default: false)

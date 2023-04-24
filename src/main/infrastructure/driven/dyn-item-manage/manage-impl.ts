@@ -156,7 +156,7 @@ export class ItemManageImpl implements ItemManage {
         }
     }
 
-    private async scanBySegment(params: ScanCommandInput, options?: { limit?: number; segment?: number; }): Promise<ScanTransactionResponse> {
+    private async scanBySegment(params: ScanCommandInput, options?: { limit?: number; segment?: number; lastEvaluatedKey?: string }): Promise<ScanTransactionResponse> {
         let lastEvaluatedKey: any;
         const results: any[] = [];
         let segment: number = options?.segment || 0;
