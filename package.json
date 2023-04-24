@@ -1,5 +1,5 @@
 {
-  "name": "pspc_d_ms_clients_users",
+  "name": "pspc_d_ms_manage_projects",
   "version": "1.0.0",
   "description": "Component of security that allow manages users",
   "main": "dist/application/app.js",
