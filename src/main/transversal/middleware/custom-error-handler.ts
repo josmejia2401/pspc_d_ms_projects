@@ -14,7 +14,7 @@ export async function customErrorHandler(customError: CustomError | Error | any)
         const statusCode = customError.response.status || 500;
         if (Utils.isEmpty(errorData)) {
             return {
-                statusCode: statusCode,
+                statusCode,
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -22,7 +22,7 @@ export async function customErrorHandler(customError: CustomError | Error | any)
             };
         } else {
             return {
-                statusCode: statusCode,
+                statusCode,
                 headers: {
                     "Content-Type": "application/json"
                 },

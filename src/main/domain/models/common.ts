@@ -14,5 +14,5 @@ export interface ScanTransactionResponse {
     lastEvaluatedKey: any;
     results: any[];
     segment: number;
-    currentRows: number;
+    currentRowsNumber: number;
 }

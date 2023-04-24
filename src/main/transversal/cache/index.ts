@@ -1,4 +1,9 @@
-const NodeCache = require("node-cache");
+/* eslint-disable */
+// import NodeCache = require('node-cache');
+// require('NodeCache');
+import NodeCache from 'node-cache';
+
+// const NodeCache = require("node-cache");
 
 /**
  * https://www.npmjs.com/package/node-cache

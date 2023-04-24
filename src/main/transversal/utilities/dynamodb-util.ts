@@ -95,8 +95,8 @@ export class DynamoDbUtil {
         }
         if (Array.isArray(payload)) {
             const results = [] as any[];
-            for (let i = 0; i < payload.length; i++) {
-                const out = DynamoDbUtil.resultToObject(payload[i]);
+            for (const p of payload) {
+                const out = DynamoDbUtil.resultToObject(p);
                 if (!Utils.isEmpty(out)) {
                     results.push(out);
                 }
@@ -105,8 +105,7 @@ export class DynamoDbUtil {
         } else {
             const results = {} as any;
             const keys = Object.keys(payload);
-            for (let j = 0; j < keys.length; j++) {
-                const key = keys[j];
+            for (const key of keys) {
                 const valueAsType = payload[key] || payload[`${key}`];
                 if (valueAsType) {
                     const keyValue = Object.keys(valueAsType)[0];
@@ -120,18 +119,17 @@ export class DynamoDbUtil {
 
     static buildUpdateExpression(payload: any) {
         const keys = Object.keys(payload);
-        let update_expression = ""
-        for (let n = 0; n < keys.length; n++) {
-            const key = keys[n];
+        let updateExpression = ""
+        for (const key of keys) {
             if (Utils.isEmpty(payload[key])) {
                 continue;
             }
-            if (Utils.isEmpty(update_expression)) {
-                update_expression += `#${key}=:${key}`;
+            if (Utils.isEmpty(updateExpression)) {
+                updateExpression += `#${key}=:${key}`;
             } else {
-                update_expression += `, #${key}=:${key}`;
+                updateExpression += `, #${key}=:${key}`;
             }
         }
-        return `SET ${update_expression}`;
+        return `SET ${updateExpression}`;
     }
 }

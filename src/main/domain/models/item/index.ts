@@ -7,4 +7,4 @@ export interface ItemDTO {
     startedAt?: string;
     completedAt?: string;
     createdAt?: string;
-} 
+}

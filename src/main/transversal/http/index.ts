@@ -37,13 +37,13 @@ export async function instrumentLambda(fn: Fn, event: any, validatorOptions?: Va
         const logger = buildLogger(event, Constants.LOGGER_MODE);
         const requestEvent: HttpRequestEvent = {
             method: HttpUtil.getMethodFromEvent(event),
-            body: Utils.anyToJson(event["body"]),
-            headers: Utils.anyToJson(event["headers"]),
-            params: Utils.anyToJson(event["pathParameters"]),
-            query: Utils.anyToJson(event["queryStringParameters"]),
+            body: Utils.anyToJson(event.body),
+            headers: Utils.anyToJson(event.headers),
+            params: Utils.anyToJson(event.pathParameters),
+            query: Utils.anyToJson(event.queryStringParameters),
         };
-        const authorization: string = requestEvent.headers["authorization"] || requestEvent.headers["Authorization"];
-        const origin: string = requestEvent.headers["origin"] || requestEvent.headers["Origin"] || "0.0.0.0";
+        const authorization: string = requestEvent.headers.authorization || requestEvent.headers.Authorization;
+        const origin: string = requestEvent.headers.origin || requestEvent.headers.Origin || "0.0.0.0";
         let decodedToken: any = null;
         if (Utils.isEmpty(authorization) === false) {
             const newtoken = authorization.replace("Bearer ", "").replace("bearer ", "");

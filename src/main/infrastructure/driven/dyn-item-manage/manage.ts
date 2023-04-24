@@ -1,3 +1,4 @@
+import { ScanTransactionResponse } from "../../../domain/models/common";
 import { ItemDTO } from "../../../domain/models/item";
 
 export interface ItemManage {
@@ -6,5 +7,5 @@ export interface ItemManage {
     create(payload: ItemDTO): Promise<any>;
     update(id: string, payload: ItemDTO): Promise<any>;
     delete(id: string, userId: string): Promise<any>
-    getByUserId(userId: string): Promise<ItemDTO[]>;
+    getByUserId(userId: string): Promise<ScanTransactionResponse>;
 }

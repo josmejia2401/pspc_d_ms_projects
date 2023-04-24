@@ -1,5 +1,5 @@
 import { DynamoDBClient, PutItemCommand, QueryCommand, DeleteItemCommand, UpdateItemCommand, ScanCommand, ScanCommandInput } from "@aws-sdk/client-dynamodb";
-//import * as AWS from "@aws-sdk/client-dynamodb";
+// import * as AWS from "@aws-sdk/client-dynamodb";
 import { ItemDTO } from "../../../domain/models/item";
 import { Constants } from "../../../transversal/constants";
 import { DynamoDbUtil } from "../../../transversal/utilities/dynamodb-util";
@@ -36,7 +36,7 @@ export class ItemManageImpl implements ItemManage {
                 },
             };
             const result: any = await this.connection.send(new QueryCommand(params));
-            return DynamoDbUtil.resultToObject(result["Items"][0]);
+            return DynamoDbUtil.resultToObject(result.Items[0]);
         } catch (error) {
             this.logger.error(error);
             throw error;
@@ -63,7 +63,7 @@ export class ItemManageImpl implements ItemManage {
                 },
             };
             const result: any = await this.connection.send(new QueryCommand(params));
-            return DynamoDbUtil.resultToObject(result["Items"][0]);
+            return DynamoDbUtil.resultToObject(result.Items[0]);
         } catch (error) {
             this.logger.error(error);
             throw error;
@@ -87,18 +87,17 @@ export class ItemManageImpl implements ItemManage {
     async update(id: string, payload: ItemDTO): Promise<any> {
         try {
             const attributes = DynamoDbUtil.buildExpressionAttributes(payload);
-            const update_expression = DynamoDbUtil.buildUpdateExpression(payload);
+            const updateExpression = DynamoDbUtil.buildUpdateExpression(payload);
             const params = {
                 TableName: Constants.AWS_DYNAMODB.DYNDB_PROJECTS_TBL,
                 Key: {
                     "id": { "S": `${id}` }
                 },
-                UpdateExpression: update_expression,
+                UpdateExpression: updateExpression,
                 ExpressionAttributeValues: attributes.expressionAttributeValues,
                 ExpressionAttributeNames: attributes.expressionAttributeNames,
                 ReturnValues: "UPDATED_NEW"
             };
-            this.logger.debug("update", JSON.stringify(params));
             return await this.connection.send(new UpdateItemCommand(params));
         } catch (error) {
             this.logger.error(error);
@@ -130,7 +129,7 @@ export class ItemManageImpl implements ItemManage {
         }
     }
 
-    async getByUserId(userId: string): Promise<ItemDTO[]> {
+    async getByUserId(userId: string): Promise<ScanTransactionResponse> {
         try {
             try {
                 const params: ScanCommandInput = {
@@ -146,7 +145,7 @@ export class ItemManageImpl implements ItemManage {
                     },
                 };
                 const result = await this.scanBySegment(params, { limit: 10 });
-                return result.results;
+                return result;
             } catch (error) {
                 this.logger.error(error);
                 throw error;
@@ -158,11 +157,11 @@ export class ItemManageImpl implements ItemManage {
     }
 
     private async scanBySegment(params: ScanCommandInput, options?: { limit?: number; segment?: number; }): Promise<ScanTransactionResponse> {
-        let lastEvaluatedKey: any = undefined;
+        let lastEvaluatedKey: any;
         const results: any[] = [];
         let segment: number = options?.segment || 0;
         if (Constants.AWS_DYNAMODB.DYNDB_SCAN_IS_SEGMENT === true) {
-            //Total de hilos
+            // Total de hilos
             params.TotalSegments = Constants.AWS_DYNAMODB.DYNDB_SCAN_TOTAL_SEGMET;
             if (Constants.AWS_DYNAMODB.DYNDB_SCAN_IS_PARALLEL === true) {
                 params.ExclusiveStartKey = undefined;
@@ -174,7 +173,7 @@ export class ItemManageImpl implements ItemManage {
                 }
                 const promisesResult = await Promise.all(promises);
                 for (const p of promisesResult) {
-                    const items = DynamoDbUtil.resultToObject(p["Items"]);
+                    const items = DynamoDbUtil.resultToObject(p.Items);
                     if (items) {
                         results.push(...items);
                     }
@@ -190,7 +189,7 @@ export class ItemManageImpl implements ItemManage {
                     }
                     const result = await this.connection.send(new ScanCommand(params));
                     lastEvaluatedKey = result.LastEvaluatedKey;
-                    const items = DynamoDbUtil.resultToObject(result["Items"]);
+                    const items = DynamoDbUtil.resultToObject(result.Items);
                     if (items) {
                         results.push(...items);
                     }
@@ -205,7 +204,7 @@ export class ItemManageImpl implements ItemManage {
                 const result = await this.connection.send(new ScanCommand(params));
                 params.ExclusiveStartKey = result.LastEvaluatedKey;
                 lastEvaluatedKey = result.LastEvaluatedKey;
-                const items = DynamoDbUtil.resultToObject(result["Items"]);
+                const items = DynamoDbUtil.resultToObject(result.Items);
                 if (items) {
                     results.push(...items);
                 }
@@ -215,10 +214,10 @@ export class ItemManageImpl implements ItemManage {
             } while (params.ExclusiveStartKey);
         }
         return {
-            lastEvaluatedKey: lastEvaluatedKey,
-            results: results,
-            segment: segment,
-            currentRows: results.length,
+            lastEvaluatedKey,
+            results,
+            segment,
+            currentRowsNumber: results.length,
         }
     }
 }

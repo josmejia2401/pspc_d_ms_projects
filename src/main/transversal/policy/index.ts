@@ -1,4 +1,4 @@
-//import { APIGatewayProxyResult } from 'aws-lambda';
+// import { APIGatewayProxyResult } from 'aws-lambda';
 
 export const denyAllPolicy = (error?: any) => {
     return {
@@ -26,7 +26,7 @@ export const denyAllPolicy = (error?: any) => {
 export const allowPolicy = (principalId: any, resource: any, data: any): Promise<any> => {
     // @see https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-lambda-authorizer-output.html
     let authResponse: any = {
-        principalId: principalId,
+        principalId,
     };
     if (principalId) {
         if (resource) {
@@ -47,7 +47,7 @@ export const allowPolicy = (principalId: any, resource: any, data: any): Promise
     }
     // Optional output with custom properties of the String, Number or Boolean type.
     authResponse.context = {
-        //stringKey: JSON.stringify(data),
+        // stringKey: JSON.stringify(data),
         ...data,
     };
     return authResponse;

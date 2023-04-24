@@ -16,6 +16,11 @@ custom:
   # serverless offline plugin setup
   serverless-offline:
     httpPort: 4000
+  webpack:
+    webpackConfig: 'webpack.config.js' # Name of webpack configuration file
+    includeModules: false # Node modules configuration for packaging
+    packager: 'npm' # Packager that will be used to package your external modules
+    excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
 
 # Service name
 service: '${self:custom.appName}-${self:custom.domainName}-${self:custom.serviceName}'
@@ -23,6 +28,7 @@ service: '${self:custom.appName}-${self:custom.domainName}-${self:custom.service
 frameworkVersion: '3'
 # plugins
 plugins:
+  - serverless-webpack
   - serverless-offline
   #- serverless-plugin-include-dependencies
   - serverless-deployment-bucket
@@ -123,7 +129,7 @@ provider:
 
 package:
   # Package this function as an individual artifact (default: false)
-  individually: false
+  individually: true
   patterns:
     - node_modules/aws-sdk/**
     - node_modules/aws-lambda/**
@@ -136,7 +142,7 @@ functions:
   create:
     name: ${self:provider.stage}-${self:service}-post-create-http
     description: Create a item for ${self:custom.serviceName}
-    handler: dist/application/aws/handler.createItemHandler
+    handler: dist/application/aws/create-handler.createItemHandler
     iamRoleStatementsName: ${self:provider.stage}-${self:service}-post-create-http-role
     iamRoleStatements:
       - Effect: Allow
@@ -161,7 +167,7 @@ functions:
   update:
     name: ${self:provider.stage}-${self:service}-put-update-http
     description: Update a item by id for ${self:custom.serviceName}
-    handler: dist/application/aws/handler.updateItemHandler
+    handler: dist/application/aws/update-handler.updateItemHandler
     iamRoleStatementsName: ${self:provider.stage}-${self:service}-put-update-http-role
     iamRoleStatements:
       - Effect: Allow
@@ -187,7 +193,7 @@ functions:
   find-by-id:
     name: ${self:provider.stage}${self:service}-get-find-by-id-http
     description: Find a item by id for ${self:custom.serviceName}
-    handler: dist/application/aws/handler.getItemByIdHanlder
+    handler: dist/application/aws/get-by-id-handler.getItemByIdHanlder
     iamRoleStatementsName: ${self:provider.stage}-${self:service}-get-find-by-id-http-role
     iamRoleStatements:
       - Effect: Allow
@@ -212,7 +218,7 @@ functions:
   find-all:
     name: ${self:provider.stage}${self:service}-get-find-all-http
     description: Find all items by project id or user id for ${self:custom.serviceName}
-    handler: dist/application/aws/handler.getItemAllHanlder
+    handler: dist/application/aws/get-all-handler.getItemAllHanlder
     iamRoleStatementsName: ${self:provider.stage}-${self:service}-get-find-all-role
     iamRoleStatements:
       - Effect: Allow
@@ -237,7 +243,7 @@ functions:
   delete:
     name: ${self:provider.stage}-${self:service}-delete-http
     description: Delete a item by id for ${self:custom.serviceName}
-    handler: dist/application/aws/handler.deleteItemByIdHandler
+    handler: dist/application/aws/delete-handler.deleteItemByIdHandler
     iamRoleStatementsName: ${self:provider.stage}-${self:service}-delete-ttp-role
     iamRoleStatements:
       - Effect: Allow

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 
 export class Utils {
-    static isEmpty(value: any): Boolean {
+    static isEmpty(value: any): boolean {
         if (value === undefined || value === null || value === "") {
             return true;
         }

@@ -1,1 +1,18 @@
-{}
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {
+        "only-arrow-functions": true
+    },
+    "rules": {
+        "no-console": false
+    },
+    "rulesDirectory": [],
+    "indent": [
+        true,
+        "spaces",
+        3
+    ]
+}
