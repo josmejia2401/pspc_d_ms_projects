@@ -11,9 +11,13 @@ export class GetItemAllUseCase {
         this.itemManage = new ItemManageImpl(logger);
     }
 
-    async execute(options: OptionsHttp) {
+    async execute(filter: {
+        lastEvaluatedKey?: string;
+        segment?: number;
+        limit?: number;
+    }, options: OptionsHttp) {
         try {
-            return await this.itemManage.getByUserId(options.decodedToken!.sub!);
+            return await this.itemManage.getByUserId(options.decodedToken!.sub!, filter);
         } catch (error) {
             this.logger.error(error);
             throw error;

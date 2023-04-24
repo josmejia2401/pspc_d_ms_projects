@@ -7,5 +7,8 @@ export interface ItemManage {
     create(payload: ItemDTO): Promise<any>;
     update(id: string, payload: ItemDTO): Promise<any>;
     delete(id: string, userId: string): Promise<any>
-    getByUserId(userId: string): Promise<ScanTransactionResponse>;
+    getByUserId(userId: string, options?: {
+        lastEvaluatedKey?: string;
+        segment?: number;
+    }): Promise<ScanTransactionResponse>;
 }

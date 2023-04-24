@@ -5,6 +5,7 @@ import { Constants } from "../../../transversal/constants";
 import { DynamoDbUtil } from "../../../transversal/utilities/dynamodb-util";
 import { ItemManage } from "./manage";
 import { ScanTransactionResponse } from "../../../domain/models/common";
+import { Utils } from "../../../transversal/utilities/utils";
 
 export class ItemManageImpl implements ItemManage {
 
@@ -129,34 +130,46 @@ export class ItemManageImpl implements ItemManage {
         }
     }
 
-    async getByUserId(userId: string): Promise<ScanTransactionResponse> {
+    async getByUserId(userId: string, options?: {
+        lastEvaluatedKey?: string;
+        segment?: number;
+        limit?: number;
+    }): Promise<ScanTransactionResponse> {
         try {
-            try {
-                const params: ScanCommandInput = {
-                    TableName: Constants.AWS_DYNAMODB.DYNDB_PROJECTS_TBL,
-                    FilterExpression: "#userId=:userId",
-                    ExpressionAttributeValues: {
-                        ":userId": {
-                            "S": `${userId}`
-                        }
-                    },
-                    ExpressionAttributeNames: {
-                        "#userId": "userId",
-                    },
-                };
-                const result = await this.scanBySegment(params, { limit: 10 });
-                return result;
-            } catch (error) {
-                this.logger.error(error);
-                throw error;
+            const limit = options?.limit || 25;
+            const params: ScanCommandInput = {
+                TableName: Constants.AWS_DYNAMODB.DYNDB_PROJECTS_TBL,
+                FilterExpression: "#userId=:userId",
+                ExpressionAttributeValues: {
+                    ":userId": {
+                        "S": `${userId}`
+                    }
+                },
+                ExpressionAttributeNames: {
+                    "#userId": "userId",
+                },
+                Limit: limit,
+            };
+            let lastEvaluatedKey: any;
+            if (!Utils.isEmpty(options?.lastEvaluatedKey)) {
+                lastEvaluatedKey = {
+                    "id": {
+                        "S": options?.lastEvaluatedKey
+                    }
+                }
             }
+            const result = await this.scanBySegment(params, { limit: limit, lastEvaluatedKey, segment: options?.segment });
+            if (!Utils.isEmpty(result.lastEvaluatedKey)) {
+                result.lastEvaluatedKey = result.lastEvaluatedKey.id.S;
+            }
+            return result;
         } catch (error) {
             this.logger.error(error);
             throw error;
         }
     }
 
-    private async scanBySegment(params: ScanCommandInput, options?: { limit?: number; segment?: number; lastEvaluatedKey?: string }): Promise<ScanTransactionResponse> {
+    private async scanBySegment(params: ScanCommandInput, options?: { limit?: number; segment?: number; lastEvaluatedKey?: any }): Promise<ScanTransactionResponse> {
         let lastEvaluatedKey: any;
         const results: any[] = [];
         let segment: number = options?.segment || 0;
@@ -200,15 +213,16 @@ export class ItemManageImpl implements ItemManage {
                 }
             }
         } else {
+            params.ExclusiveStartKey = options?.lastEvaluatedKey;
             do {
                 const result = await this.connection.send(new ScanCommand(params));
                 params.ExclusiveStartKey = result.LastEvaluatedKey;
                 lastEvaluatedKey = result.LastEvaluatedKey;
                 const items = DynamoDbUtil.resultToObject(result.Items);
-                if (items) {
+                if (!Utils.isEmpty(items)) {
                     results.push(...items);
                 }
-                if (options?.limit && results.length > options.limit) {
+                if (options?.limit && results.length >= options.limit) {
                     break;
                 }
             } while (params.ExclusiveStartKey);

@@ -2,10 +2,15 @@ import { Fn, HttpRequestEvent, HttpResponseEvent, OptionsHttp } from "../../../t
 import { GetItemAllUseCase } from "../../../domain/usecases/find-all";
 
 export function getItemAllAdapter(): Fn {
-    return async (_event: HttpRequestEvent, d: any, options: OptionsHttp): Promise<HttpResponseEvent> => {
+    return async (event: HttpRequestEvent, d: any, options: OptionsHttp): Promise<HttpResponseEvent> => {
         const { logger } = d;
         try {
-            const output = await new GetItemAllUseCase(logger).execute(options);
+
+            const output = await new GetItemAllUseCase(logger).execute({
+                lastEvaluatedKey: event.query.lastEvaluatedKey,
+                segment: Number(event.query.segment || 0),
+                limit: Number(event.query.limit || 0),
+            }, options);
             return {
                 "headers": {},
                 "body": output,
