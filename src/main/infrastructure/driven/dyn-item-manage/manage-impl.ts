@@ -158,7 +158,7 @@ export class ItemManageImpl implements ItemManage {
                     }
                 }
             }
-            const result = await this.scanBySegment(params, { limit: limit, lastEvaluatedKey, segment: options?.segment });
+            const result = await this.scanBySegment(params, { limit, lastEvaluatedKey, segment: options?.segment });
             if (!Utils.isEmpty(result.lastEvaluatedKey)) {
                 result.lastEvaluatedKey = result.lastEvaluatedKey.id.S;
             }
@@ -178,6 +178,7 @@ export class ItemManageImpl implements ItemManage {
             params.TotalSegments = Constants.AWS_DYNAMODB.DYNDB_SCAN_TOTAL_SEGMET;
             if (Constants.AWS_DYNAMODB.DYNDB_SCAN_IS_PARALLEL === true) {
                 params.ExclusiveStartKey = undefined;
+                params.Limit = undefined;
                 const promises: any[] = [];
                 while (segment < Constants.AWS_DYNAMODB.DYNDB_SCAN_NUM_SEGMET) {
                     params.Segment = segment;
@@ -195,12 +196,11 @@ export class ItemManageImpl implements ItemManage {
                     }
                 }
             } else {
+                params.ExclusiveStartKey = options?.lastEvaluatedKey;
                 while (segment < Constants.AWS_DYNAMODB.DYNDB_SCAN_NUM_SEGMET) {
                     params.Segment = segment;
-                    if (segment) {
-                        params.ExclusiveStartKey = undefined;
-                    }
                     const result = await this.connection.send(new ScanCommand(params));
+                    params.ExclusiveStartKey = result.LastEvaluatedKey;
                     lastEvaluatedKey = result.LastEvaluatedKey;
                     const items = DynamoDbUtil.resultToObject(result.Items);
                     if (items) {
